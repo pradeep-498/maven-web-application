@@ -23,8 +23,9 @@ node{
 }
 
 }
+   /*
     stage('UploadArtifactReportintoNexus'){
        sh "${mavenHome}/bin/mvn clean deploy"
     }
-    
+    */
 }
