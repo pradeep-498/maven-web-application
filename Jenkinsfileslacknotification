@@ -1,0 +1,55 @@
+node{
+    echo "job name is :${env.JOB_NAME}"
+    //echo "Build name is :${env.BUILD_NUMBER}"
+    echo "Node name is :${env.NODE_NAME}"
+    echo "Jenkins home name is :${env.JENKINS_HOME}"
+    def mavenHome = tool name:"maven3.8.7"
+
+    properties([buildDiscarder(logRotator(artifactDaysToKeepStr: '', artifactNumToKeepStr: '5', daysToKeepStr: '', numToKeepStr: '5')), [$class: 'JobLocalConfiguration', changeReasonComment: ''], pipelineTriggers([pollSCM('* * * * *')])])
+try
+{
+    stage('checkoutcode'){
+        sendSlackNotification('STARTED')
+        git branch: 'development', credentialsId: '41286bfb-45f7-4aef-9dff-0aa537135d0b', url: 'https://github.com/pradeep-498/maven-web-application.git'
+    }
+    
+    stage('Build'){
+        sh "${mavenHome}/bin/mvn clean package"
+    }
+}
+catch(e)
+{
+currentBuild.result = "FAILED"
+throw e
+}
+finally{
+sendSlackNotification(currentBuild.result)
+}
+}//this is node closing
+
+//this is the fucntion
+def sendSlackNotification(String buildStatus = 'STARTED') {
+  // build status of null means successful
+  buildStatus =  buildStatus ?: 'SUCCESSFUL'
+
+  // Default values
+  def colorName = 'RED'
+  def colorCode = '#FF0000'
+  def subject = "${buildStatus}: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]'"
+  def summary = "${subject} (${env.BUILD_URL})"
+
+  // Override default values based on build status
+  if (buildStatus == 'STARTED') {
+    colorName = 'YELLOW'
+    colorCode = '#FFFF00'
+  } else if (buildStatus == 'SUCCESSFUL') {
+    colorName = 'GREEN'
+    colorCode = '#00FF00'
+  } else {
+    colorName = 'RED'
+    colorCode = '#FF0000'
+  }
+
+  // Send notifications
+  slackSend (color: colorCode, message: summary)
+}
