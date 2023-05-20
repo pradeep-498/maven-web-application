@@ -1,6 +1,6 @@
 node{
     echo "job name is :${env.JOB_NAME}"
-    echo "Build name is :${env.BUILD_NUMBER}"
+    //echo "Build name is :${env.BUILD_NUMBER}"
     echo "Node name is :${env.NODE_NAME}"
     echo "Jenkins home name is :${env.JENKINS_HOME}"
     def mavenHome = tool name:"maven3.8.7"
